@@ -1,0 +1,48 @@
+apiVersion: tekton.dev/v1
+kind: Task
+metadata:
+  name: cleanup
+spec:
+  workspaces:
+    - name: source
+
+  steps:
+    - name: cleanup
+      image: alpine:3.19
+      script: |
+        #!/bin/sh
+        set -e
+
+        echo "Cleaning workspace..."
+
+        rm -rf /workspace/source/*
+
+        echo "Cleanup completed successfully."
+
+---
+apiVersion: tekton.dev/v1
+kind: Task
+metadata:
+  name: test
+spec:
+  workspaces:
+    - name: source
+
+  steps:
+    - name: run-tests
+      image: python:3.11
+      workingDir: /workspace/source
+      script: |
+        #!/bin/bash
+        set -e
+
+        echo "Installing dependencies..."
+
+        pip install --no-cache-dir -r requirements.txt
+        pip install --no-cache-dir nose
+
+        echo "Running unit tests..."
+
+        nosetests
+
+        echo "Unit tests completed successfully."
